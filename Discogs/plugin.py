@@ -86,9 +86,7 @@ class Discogs(callbacks.PluginRegexp):
             """get subkey values, deduped and omitting some things"""
             new_list = [ x.get(subkey) for x in data.get(key) ]
             new_list = list(dict.fromkeys(new_list)) # dedupe
-            for v in new_list:
-                if v == 'All Media':
-                    new_list.remove(v)
+            new_list = [v for v in new_list if v != 'All Media']
             return new_list
 
         if item_type == 'release':
@@ -98,7 +96,7 @@ class Discogs(callbacks.PluginRegexp):
             have = community.get('have', '')
             want = community.get('want', '')
             num_for_sale = data.get('num_for_sale', '')
-            output = f'{prefix} {artists} - {title} ({year}) {formats} [{labels}] [{have}:{want} / {num_for_sale}]'
+            output = f'{prefix} {artists} - {title} ({year}) {formats} [{labels}] [{have}:{want} | {num_for_sale}]'
         else:
             output = f'{prefix} {artists} - {title} ({year})'
         
