@@ -48,9 +48,18 @@ def configure(advanced):
 
 
 Discogs = conf.registerPlugin('Discogs')
-# This is where your configuration variables (if any) should go.  For example:
-# conf.registerGlobalValue(Discogs, 'someConfigVariableName',
-#     registry.Boolean(False, _("""Help for someConfigVariableName.""")))
 
+conf.registerChannelValue(Discogs, "tRelease",
+    registry.String(
+        '^ {{artists}} - {{title}} ({{year}}) {{formats}} [{{labels}}] H:{{have}} W:{{want}} FS:{{for_sale}}',
+        _("""Template for releases"""),
+    )
+)
+conf.registerChannelValue(Discogs, "tMaster",
+    registry.String(
+        '^ {{artists}} - {{title}} ({{year}})',
+        _("""Template for masters"""),
+    )
+)
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

@@ -32,6 +32,7 @@ from supybot import utils, plugins, ircutils, callbacks
 from supybot.commands import *
 from supybot.i18n import PluginInternationalization
 import json
+from jinja2 import Template
 
 _ = PluginInternationalization('Discogs')
 
@@ -44,7 +45,7 @@ class Discogs(callbacks.PluginRegexp):
     """snarf discogs links"""
     regexps = ['discogs_snarfer']
     threaded = True
-    callBefore = ["Web", "SpiffyTitles"]
+    callBefore = ["Web"]
 
     def _discogs_api(self, item_type, item_id):
         """GET json from discogs api"""
@@ -59,28 +60,24 @@ class Discogs(callbacks.PluginRegexp):
     def _discogs_handler(self, irc, msg, match):
         """title discogs urls"""
         channel = msg.channel
-        #  network = irc.network
+        network = irc.network
         
         #  url       = match.group(0)
         item_type = match.group(1)
         item_id   = match.group(2)      
         data = self._discogs_api(item_type, item_id)
         
-        prefix  = '^'
         artists = ''
         formats = ''
         labels  = ''
         have    = ''
         want    = ''
-        num_for_sale = ''
+        for_sale = ''
 
         for x in data['artists']:
             name = x.get('name')  ## should this use 'anv' when available?
             join = x.get('join', '').replace('Featuring', 'ft.')
             artists += f'{name} {join} '
-
-        title = data.get('title', '')
-        year  = data.get('year', '')
 
         def extract_values(data, key, subkey):
             """get subkey values, deduped and omitting some things"""
@@ -95,11 +92,20 @@ class Discogs(callbacks.PluginRegexp):
             community = data.get('community')
             have = community.get('have', '')
             want = community.get('want', '')
-            num_for_sale = data.get('num_for_sale', '')
-            output = f'{prefix} {artists} - {title} ({year}) {formats} [{labels}] [{have}:{want} | {num_for_sale}]'
-        else:
-            output = f'{prefix} {artists} - {title} ({year})'
-        
+            for_sale = data.get('num_for_sale', '')
+            
+        template_vars = {
+            'artists' : artists,
+            'title'   : data.get('title', ''),
+            'year'    : data.get('year',  ''),
+            'formats' : formats,
+            'labels'  : labels,
+            'have'    : have,
+            'want'    : want,
+            'for_sale': for_sale,
+            }
+        t = Template( self.registryValue(f't{item_type}', channel=channel, network=network) )
+        output = t.render(template_vars)
         irc.reply( utils.str.normalizeWhitespace(output) )
         
     discogs_snarfer = urlSnarfer(_discogs_handler)
