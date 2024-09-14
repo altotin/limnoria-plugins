@@ -61,6 +61,8 @@ class Discogs(callbacks.PluginRegexp):
         """title discogs urls"""
         channel = msg.channel
         network = irc.network
+        if not self.registryValue('snarf', channel=channel, network=network):
+            return
         
         #  url       = match.group(0)
         item_type = match.group(1)

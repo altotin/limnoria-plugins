@@ -49,6 +49,11 @@ def configure(advanced):
 
 Discogs = conf.registerPlugin('Discogs')
 
+conf.registerChannelValue(Discogs, "snarf",
+    registry.Boolean(True,
+        _("""Enable Discogs snarfing""")
+    )
+)
 conf.registerChannelValue(Discogs, "tRelease",
     registry.String(
         '^ {{artists}} - {{title}} ({{year}}) {{formats}} [{{labels}}] H:{{have}} W:{{want}} FS:{{for_sale}}',
