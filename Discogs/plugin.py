@@ -75,6 +75,7 @@ class Discogs(callbacks.PluginRegexp):
         have    = ''
         want    = ''
         for_sale = ''
+        blocked = False
 
         for x in data['artists']:
             name = x.get('name')  ## should this use 'anv' when available?
@@ -95,6 +96,9 @@ class Discogs(callbacks.PluginRegexp):
             have = community.get('have', '')
             want = community.get('want', '')
             for_sale = data.get('num_for_sale', '')
+            if data.get('blocked_from_sale') == True:
+                blocked = True
+                for_sale = 'X'
             
         template_vars = {
             'artists' : artists,
@@ -105,6 +109,7 @@ class Discogs(callbacks.PluginRegexp):
             'have'    : have,
             'want'    : want,
             'for_sale': for_sale,
+            'blocked' : blocked,
             }
         t = Template( self.registryValue(f't{item_type}', channel=channel, network=network) )
         output = t.render(template_vars)

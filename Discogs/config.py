@@ -56,7 +56,7 @@ conf.registerChannelValue(Discogs, "snarf",
 )
 conf.registerChannelValue(Discogs, "tRelease",
     registry.String(
-        '^ {{artists}} - {{title}} ({{year}}) {{formats}} [{{labels}}] H:{{have}} W:{{want}} FS:{{for_sale}}',
+        '^ {{artists}} - {{title}} ({{year}}) :: {{formats}} :: {{labels}} :: H:{{have}} W:{{want}} FS:{{for_sale}}',
         _("""Template for releases"""),
     )
 )
