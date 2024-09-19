@@ -113,7 +113,7 @@ class Discogs(callbacks.PluginRegexp):
             }
         t = Template( self.registryValue(f't{item_type}', channel=channel, network=network) )
         output = t.render(template_vars)
-        irc.reply( utils.str.normalizeWhitespace(output) )
+        irc.reply( utils.str.normalizeWhitespace(output), prefixNick = False )
         
     discogs_snarfer = urlSnarfer(_discogs_handler)
     discogs_snarfer.__doc__ = REGEX        
