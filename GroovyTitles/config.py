@@ -57,7 +57,7 @@ conf.registerChannelValue(GroovyTitles.bsky, "enabled",
 )
 conf.registerChannelValue(GroovyTitles.bsky, "template",
     registry.String(
-        '^ {{message}} — {{author}} {{timestamp}}',
+        '^ {{message}} {{has_image}} — {{author}}\x0315 {{handle}} {{timestamp}}',
         _("""bluesky output template"""),
     )
 )

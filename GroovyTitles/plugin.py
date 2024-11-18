@@ -60,7 +60,6 @@ class GroovyTitles(callbacks.PluginRegexp):
         network = irc.network
         if not self.registryValue('bsky.enabled', channel=channel, network=network):
             return
-        
         url = match.group(0)
         soup = self._get_soup(url)
         
@@ -72,9 +71,10 @@ class GroovyTitles(callbacks.PluginRegexp):
             return ''
         
         message = get_content(soup, 'meta[name="description"]')
-        if not message:
-            irc.reply('bsky post not visible')
-            return
+        image   = get_content(soup, 'meta[property="og:image"]')
+        has_image = ''
+        if image:
+            has_image = '<img>'
         
         timestamp_display = ''
         timestamp = get_content(soup, 'meta[name="article:published_time"]')
@@ -82,17 +82,29 @@ class GroovyTitles(callbacks.PluginRegexp):
             dt = datetime.fromisoformat(timestamp.replace('Z', ''))
             format_string = self.registryValue('bsky.timeFormat', channel=channel, network=network)
             timestamp_display = dt.astimezone(ZoneInfo('UTC')).strftime(format_string)
+        else:
+            irc.reply('couldn\'t load bsky post')
+            return
 
+        author = ''
+        handle = ''
         author_handle = get_content(soup, 'meta[property="og:title"]')
         match = re.match(r'(.+) \(([\w.@-]+)\)$', author_handle)
-        author = match.group(1)
-        handle = match.group(2)
+        try:
+            # User Name (@handle.bsky.social)
+            author = match.group(1)
+            handle = match.group(2)
+        except:
+            # @handle.bsky.social
+            handle = author_handle
         
         template_vars = {
             'message': message,
             'author' : author,
             'handle' : handle,
             'timestamp' : timestamp_display,
+            'image'     : image,
+            'has_image' : has_image,
             }
         t = Template( self.registryValue('bsky.template', channel=channel, network=network) )
         output = t.render(template_vars)
