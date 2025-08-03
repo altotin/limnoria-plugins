@@ -40,12 +40,9 @@ from bs4 import BeautifulSoup
 
 _ = PluginInternationalization('GroovyTitles')
 
-REGEX_BSKY = r'https://bsky\.app/profile/[^\s/]+/post/[^\s]+'
-
 class GroovyTitles(callbacks.PluginRegexp):
     """GroovyTitles"""
-    regexps = ['bsky_snarfer']
-    threaded = True
+    regexps = ['_bsky_handler']
     callBefore = ["Web"]
 
     def _get_soup(self, url):
@@ -54,8 +51,9 @@ class GroovyTitles(callbacks.PluginRegexp):
         s = utils.web.getUrl(url).decode('utf8')
         return BeautifulSoup(s)
 
+    @urlSnarfer
     def _bsky_handler(self, irc, msg, match):
-        """title bsky urls"""
+        r'https://bsky\.app/profile/[^\s/]+/post/[^\s]+'
         channel = msg.channel
         network = irc.network
         if not self.registryValue('bsky.enabled', channel=channel, network=network):
@@ -109,9 +107,6 @@ class GroovyTitles(callbacks.PluginRegexp):
         t = Template( self.registryValue('bsky.template', channel=channel, network=network) )
         output = t.render(template_vars)
         irc.reply( utils.str.normalizeWhitespace(output), prefixNick = False )
-        
-    bsky_snarfer = urlSnarfer(_bsky_handler)
-    bsky_snarfer.__doc__ = REGEX_BSKY
 
 
 Class = GroovyTitles
