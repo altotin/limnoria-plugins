@@ -128,7 +128,7 @@ class GroovyTitles(callbacks.PluginRegexp):
 
     @urlSnarfer
     def _yt_handler(self, irc, msg, match):
-        r'https?://((www|m)\.)?((youtube(-nocookie)?\.com|youtu.be))/[^\s]+'
+        r'https?://((www|m|music)\.)?((youtube(-nocookie)?\.com|youtu.be))/[^\s]+'
         channel = msg.channel
         network = irc.network
         if not self.registryValue('youtube.enabled', channel=channel, network=network):
