@@ -68,4 +68,18 @@ conf.registerChannelValue(GroovyTitles.bsky, "timeFormat",
     )
 )
 
+
+conf.registerGroup(GroovyTitles, "youtube")
+conf.registerChannelValue(GroovyTitles.youtube, "enabled",
+    registry.Boolean(True,
+        _("""Enable youtube titling""")
+    )
+)
+conf.registerChannelValue(GroovyTitles.youtube, "template",
+    registry.String(
+        '^ {{title}} \x0315– {{channel_title}}',
+        _("""youtube output template"""),
+    )
+)
+
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

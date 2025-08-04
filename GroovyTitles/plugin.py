@@ -42,14 +42,31 @@ _ = PluginInternationalization('GroovyTitles')
 
 class GroovyTitles(callbacks.PluginRegexp):
     """GroovyTitles"""
-    regexps = ['_bsky_handler']
-    callBefore = ["Web"]
+    regexps = ['_bsky_handler', '_yt_handler']
+    callBefore = ['Web']
 
     def _get_soup(self, url):
         """get soup from url"""
         self.log.debug(f'groovytitles: fetching {url}')
         s = utils.web.getUrl(url).decode('utf8')
         return BeautifulSoup(s)
+
+    def _get_json(self, url):
+        """get json from url"""
+        self.log.debug(f'groovytitles: fetching json {url}')
+        with utils.web.getUrlFd(url) as fd:
+            try:
+                return json.load(fd)
+            except json.JSONDecodeError as e:
+                return {}
+                
+    def _extract_yt_id(self, s):
+        """extract youtube video id from string"""
+        found = re.findall(r'(?:v=|/)([0-9A-Za-z_-]{11})', s)
+        if found:
+            # will match twice on https://youtube-nocookie.com/embed/dQw4w9WgXcQ
+            # return the final match
+            return found[-1]
 
     @urlSnarfer
     def _bsky_handler(self, irc, msg, match):
@@ -105,6 +122,42 @@ class GroovyTitles(callbacks.PluginRegexp):
             'has_image' : has_image,
             }
         t = Template( self.registryValue('bsky.template', channel=channel, network=network) )
+        output = t.render(template_vars)
+        irc.reply( utils.str.normalizeWhitespace(output), prefixNick = False )
+
+
+    @urlSnarfer
+    def _yt_handler(self, irc, msg, match):
+        r'https?://((www|m)\.)?((youtube(-nocookie)?\.com|youtu.be))/[^\s]+'
+        channel = msg.channel
+        network = irc.network
+        if not self.registryValue('youtube.enabled', channel=channel, network=network):
+            return
+        
+        video_id = self._extract_yt_id(match.group(0))
+        if not video_id:
+            return
+        
+        params = {
+            'format': 'json',
+            'url': 'https://www.youtube.com/watch?v=' + video_id,
+            }
+        url = 'https://www.youtube.com/oembed?' + urllib.parse.urlencode(params)
+        response = self._get_json(url)
+        
+        try:
+            title = response['title']
+        except KeyError:
+            self.log.error(f'groovytitles: failed to get title from {url}')
+            return
+        channel_title = response.get('author_name', '')
+        channel_title = re.sub(' - Topic$', '', channel_title)
+
+        template_vars = {
+            'title': title,
+            'channel_title' : channel_title,
+            }
+        t = Template( self.registryValue('youtube.template', channel=channel, network=network) )
         output = t.render(template_vars)
         irc.reply( utils.str.normalizeWhitespace(output), prefixNick = False )
 
