@@ -32,7 +32,7 @@ from supybot import utils, plugins, ircutils, callbacks
 from supybot.commands import *
 from supybot.i18n import PluginInternationalization
 import re, json
-import urllib.parse
+from urllib.parse import urlencode, urlparse, parse_qsl, parse_qs
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from jinja2 import Template
@@ -68,6 +68,16 @@ class GroovyTitles(callbacks.PluginRegexp):
             # return the final match
             return found[-1]
 
+    def _extract_yt_playlist_id(self, s):
+        """extract youtube playlist id from string"""
+        parsed = urlparse(s)
+        if parsed.path != '/playlist':
+            return
+        query = parse_qs(parsed.query)
+        value = query.get('list')
+        return value[0] if value else None
+        
+        
     @urlSnarfer
     def _bsky_handler(self, irc, msg, match):
         r'https://bsky\.app/profile/[^\s/]+/post/[^\s]+'
@@ -134,15 +144,23 @@ class GroovyTitles(callbacks.PluginRegexp):
         if not self.registryValue('youtube.enabled', channel=channel, network=network):
             return
         
+        lookup_url = None
         video_id = self._extract_yt_id(match.group(0))
-        if not video_id:
+        if video_id:
+            lookup_url = 'https://www.youtube.com/watch?v=' + video_id
+        else:
+            playlist_id = self._extract_yt_playlist_id(match.group(0))
+            if playlist_id:
+                lookup_url = 'https://www.youtube.com/playlist?list=' + playlist_id
+
+        if not lookup_url:
             return
         
         params = {
             'format': 'json',
-            'url': 'https://www.youtube.com/watch?v=' + video_id,
+            'url': lookup_url,
             }
-        url = 'https://www.youtube.com/oembed?' + urllib.parse.urlencode(params)
+        url = 'https://www.youtube.com/oembed?' + urlencode(params)
         response = self._get_json(url)
         
         try:
