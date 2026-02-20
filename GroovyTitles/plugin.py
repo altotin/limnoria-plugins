@@ -49,7 +49,7 @@ class GroovyTitles(callbacks.PluginRegexp):
         """get soup from url"""
         self.log.debug(f'groovytitles: fetching {url}')
         s = utils.web.getUrl(url).decode('utf8')
-        return BeautifulSoup(s)
+        return BeautifulSoup(s, features='lxml')
 
     def _get_json(self, url):
         """get json from url"""
