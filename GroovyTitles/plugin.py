@@ -102,7 +102,7 @@ class GroovyTitles(callbacks.PluginRegexp):
             has_image = '<img>'
         
         timestamp_display = ''
-        timestamp = get_content(soup, 'meta[name="article:published_time"]')
+        timestamp = get_content(soup, 'meta[property="article:published_time"]')
         if timestamp:
             dt = datetime.fromisoformat(timestamp.replace('Z', ''))
             format_string = self.registryValue('bsky.timeFormat', channel=channel, network=network)
