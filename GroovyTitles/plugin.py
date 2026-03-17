@@ -107,9 +107,6 @@ class GroovyTitles(callbacks.PluginRegexp):
             dt = datetime.fromisoformat(timestamp.replace('Z', ''))
             format_string = self.registryValue('bsky.timeFormat', channel=channel, network=network)
             timestamp_display = dt.astimezone(ZoneInfo('UTC')).strftime(format_string)
-        else:
-            irc.reply('couldn\'t load bsky post')
-            return
 
         author = ''
         handle = ''
